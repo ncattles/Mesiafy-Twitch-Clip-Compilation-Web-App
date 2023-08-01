@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Twitch Clips</title>
+</head>
+<body>
+    <h1>Clips from Twitch Channel</h1>
+    <ul>
+        {% for clip in clips %}
+            <li>
+                <a href="{{ clip['url'] }}" target="_blank">{{ clip['title'] }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
