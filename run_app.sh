@@ -7,4 +7,4 @@ pip install --upgrade pip
 pip install -r requirements.txt
 
 # Step 3: Start the Flask application
-sudo flask run --cert=adhoc
+sudo flask run --reload 

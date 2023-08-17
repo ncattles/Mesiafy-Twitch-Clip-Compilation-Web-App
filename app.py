@@ -1,56 +1,47 @@
-from flask import Flask, redirect, render_template, request, session, url_for
-import requests
 import os
 from dotenv import load_dotenv
+from flask import Flask, session, redirect, request, url_for, render_template
+from flask_oauthlib.client import OAuth
+import requests
+import json
+from werkzeug.urls import url_quote, url_unquote, url_encode
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)  # Set a secret key for session management
+app.secret_key = "development"
 
 # Load environment variables from the .env file
 load_dotenv()
 
-# Route to initiate the Twitch OAuth flow
+oauth = OAuth()
+
+twitch = oauth.remote_app('twitch',
+    base_url='https://api.twitch.tv/helix/',
+    request_token_url=None,
+    access_token_method='POST',
+    access_token_url='https://id.twitch.tv/oauth2/token',
+    authorize_url='https://id.twitch.tv/oauth2/authorize',
+    consumer_key=os.getenv('TWITCH_CLIENT_ID'),
+    consumer_secret=os.getenv('TWITCH_CLIENT_SECRET'),
+    request_token_params={'scope': ['user:read:email']}
+)
+
+# Route to initiate the Twitch OAuth flow using Flask-OAuthlib
 @app.route('/login')
 def login():
-    twitch_client_id = os.getenv('TWITCH_CLIENT_ID')
-    redirect_uri = 'http://localhost:5000/twitch_callback'
-    scope = 'user:read:email'  # Specify the required scopes
-    auth_url = f'https://id.twitch.tv/oauth2/authorize?client_id={twitch_client_id}&redirect_uri={redirect_uri}&response_type=code&scope={scope}'
-    return redirect(auth_url)
+    return twitch.authorize(callback=url_for('twitch_authorized', _external=True))
 
-# Route to handle the Twitch OAuth callback
-@app.route('/twitch_callback')
-def twitch_callback():
-    # Handle the callback from Twitch after the user grants permission
-    auth_code = request.args.get('code')
-
-    # Exchange the authorization code for an access token
-    access_token = exchange_code_for_token(auth_code)
-
-    # Store the access token in the session
-    session['access_token'] = access_token
-
+# Route to handle the Twitch OAuth callback using Flask-OAuthlib
+@app.route('/twitch_authorized')
+def twitch_authorized():
+    resp = twitch.authorized_response()
+    if resp is None or resp.get('access_token') is None:
+        return 'Access denied: reason=%s error=%s' % (
+            request.args['error'],
+            request.args['error_description']
+        )
+    session['access_token'] = (resp['access_token'], '')
+    print(session['access_token'])  # Print to verify access token
     return redirect('/')
-
-# Function to exchange authorization code for access token
-def exchange_code_for_token(auth_code):
-    twitch_client_id = os.getenv('TWITCH_CLIENT_ID')
-    twitch_client_secret = os.getenv('TWITCH_CLIENT_SECRET')
-    redirect_uri = 'http://localhost:5000/twitch_callback'
-    
-    token_url = 'https://id.twitch.tv/oauth2/token'
-    data = {
-        'client_id': twitch_client_id,
-        'client_secret': twitch_client_secret,
-        'code': auth_code,
-        'grant_type': 'authorization_code',
-        'redirect_uri': redirect_uri
-    }
-
-    response = requests.post(token_url, data=data)
-    token_data = response.json()
-    
-    return token_data.get('access_token')
 
 # Function to get broadcaster ID using channel name
 def get_broadcaster_id(channel_name):
@@ -58,19 +49,20 @@ def get_broadcaster_id(channel_name):
     api_url = f'https://api.twitch.tv/helix/users?login={channel_name}'
     
     headers = {
-        'Client-ID': twitch_client_id
+        'Client-ID': twitch_client_id,
+        'Authorization': f'Bearer {session["access_token"][0]}'  # Use the stored access token
     }
     
     response = requests.get(api_url, headers=headers)
     data = response.json().get('data', [])
-    
+    print(response.json())  # Print to verify data
     if data:
         return data[0]['id']
     else:
         print(response.json())
         return None
 
-# Route to fetch and display clips
+# Route to fetch and display clips using Flask-OAuthlib
 @app.route('/')
 def fetch_clips():
     try:
@@ -79,30 +71,30 @@ def fetch_clips():
 
         channel_name = 'NNastii'
         broadcaster_id = get_broadcaster_id(channel_name)
-        
+
         if not broadcaster_id:
             return "Error: Could not find broadcaster ID"
 
         api_url = f'https://api.twitch.tv/helix/clips?broadcaster_id={broadcaster_id}&first=10'
 
-        access_token = session['access_token']
-        twitch_client_id = os.getenv('TWITCH_CLIENT_ID')
+        access_token = session['access_token'][0]
 
         headers = {
-            'Client-ID': twitch_client_id,
-            'Authorization': f'Bearer {access_token}',  # Make sure the format is correct
+            'Client-ID': os.getenv('TWITCH_CLIENT_ID'),
+            'Authorization': f'Bearer {access_token}',
         }
 
         response = requests.get(api_url, headers=headers)
 
         if response.status_code == 200:
             clips_data = response.json().get('data', [])
-            return render_template('clips.html', clips=clips_data)
+            return render_template('index.html', clips=clips_data)
         else:
-            return f"Error: Unable to fetch clips. Status Code: {response.status_code}\nResponse Content: {response.content}"
+            error_message = response.json().get('message')
+            return f"Error: Unable to fetch clips. Status Code: {response.status_code}\nResponse Content: {error_message}"
 
     except Exception as e:
         return f"Error: {e}"
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)

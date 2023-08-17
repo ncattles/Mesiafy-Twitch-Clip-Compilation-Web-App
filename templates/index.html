@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Twitch Clips</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        li a {
+            text-decoration: none;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Twitch Clips</h1>
+    </header>
+    <div class="container">
+        <h2>Clips from Twitch Channel</h2>
+        <ul>
+            {% for clip in clips %}
+                <li>
+                    <a href="{{ clip['url'] }}" target="_blank">{{ clip['title'] }}</a>
+                    <p>{{ clip['creation_date'] }}</p>
+                    <img src="{{ clip['thumbnail_url'] }}" alt="{{ clip['title'] }}" width="320">
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>
