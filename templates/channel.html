@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    
+<head>
+    <h1>Enter your Twitch channel name</h1>
+    <form action="/" method="POST">
+        <label for="channel_name">Twitch channel</label><br>
+        <input type="text" id="channel_name" name="channel_name"><br>
+        <input type="submit" value="Submit">
+    </form>
+
+    {% if channel_name %}
+    <h2>Your Twitch channel name is: {{ channel_name }}</h2>
+    {% endif %}
+</head>
+
+</html>
