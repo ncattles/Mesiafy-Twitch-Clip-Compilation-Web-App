@@ -63,13 +63,32 @@ def get_broadcaster_id(channel_name):
         return None
 
 # Route to fetch and display clips using Flask-OAuthlib
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
+def twitch_channel():
+    if 'access_token' not in session:
+        return redirect('/login')
+
+    if request.method == 'POST':
+        # Get the channel name from the form data
+        channel_name = request.form.get('channel_name')
+
+        # Redirect to the /clips route with the channel_name as a query parameter
+        return redirect(url_for('fetch_clips', channel_name=channel_name))
+
+    return render_template('channel.html')
+
+# Route to fetch and display clips using Flask-OAuthlib
+@app.route('/clips')
 def fetch_clips():
     try:
         if 'access_token' not in session:
             return redirect('/login')
 
-        channel_name = 'NNastii'
+        channel_name = request.args.get('channel_name')
+
+        if not channel_name:
+            return "Error: Channel name not provided."
+
         broadcaster_id = get_broadcaster_id(channel_name)
 
         if not broadcaster_id:
