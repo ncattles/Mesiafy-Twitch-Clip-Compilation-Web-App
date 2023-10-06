@@ -7,18 +7,24 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+            background-color: white;
         }
         header {
-            background-color: #333;
+            background-color: black;
             color: white;
             text-align: center;
             padding: 1rem;
         }
+
+        h2 {
+            font-size: 30px;
+            text-align: center;
+            padding: 1rem;      
+        }
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 1rem;
         }
         ul {
             list-style: none;
@@ -36,20 +42,33 @@
             text-decoration: none;
             color: #333;
         }
+        a:visited {
+            color: purple;
+        }
+        a:hover {
+            color: green;
+        }
+        .image:hover {
+            opacity: 0.5;
+        }
     </style>
 </head>
 <body>
     <header>
         <h1>Twitch Clips</h1>
     </header>
+    <h2>Clips from Twitch Channel</h2>
     <div class="container">
-        <h2>Clips from Twitch Channel</h2>
         <ul>
             {% for clip in clips %}
                 <li>
-                    <a href="{{ clip['url'] }}" target="_blank">{{ clip['title'] }}</a>
-                    <p>{{ clip['creation_date'] }}</p>
-                    <img src="{{ clip['thumbnail_url'] }}" alt="{{ clip['title'] }}" width="320">
+                    <b>Clip Title:</b> <a href="{{ clip['url'] }}" target="_blank" style="text-decoration: underline;"> {{ clip['title'] }}</a>
+                    <p> <b>Date created:</b> {{ clip['created_at'] }}</p>
+                    <p> <b>Views:</b> {{ clip['view_count'] }}</p>
+                    <a href="{{ clip['url'] }}" target="_blank">
+                        <img src="{{ clip['thumbnail_url'] }}" class="image" alt="{{ clip['title'] }}" width="320">
+                    </a>
+                    
                 </li>
             {% endfor %}
         </ul>
