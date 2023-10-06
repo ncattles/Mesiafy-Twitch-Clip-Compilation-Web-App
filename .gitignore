@@ -1,5 +1,8 @@
 .env
-__pycache__/
+__pycache__
 env/
 flask_session
 .DS_Store
+flask-app/.env
+flask-app/env/*
+flask-app/__pycache__
