@@ -1,10 +1,41 @@
 <!DOCTYPE html>
 <html>
     
+<style>
+    h1 {
+        text-align: center;
+        font: bold 30px Verdana, sans-serif;
+    }
+    h2 {
+        text-align: center;
+    }
+    form {
+        text-align: center;
+    }
+    label {
+        font-size: 20px;
+    }
+    input {
+        font-size: 20px;
+    }
+    input[type=submit] {
+        font-size: 20px;
+        background-color: #4CAF50;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        margin: 4px 2px;
+        cursor: pointer;
+    }
+    input[type=submit]:hover {
+        background-color: #45a049;
+    }
+
+</style>
 <head>
     <h1>Enter your Twitch channel name</h1>
     <form action="/" method="POST">
-        <label for="channel_name">Twitch channel</label><br>
         <input type="text" id="channel_name" name="channel_name"><br>
         <input type="submit" value="Submit">
     </form>
