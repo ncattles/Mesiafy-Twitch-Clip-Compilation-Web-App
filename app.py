@@ -94,7 +94,7 @@ def fetch_clips():
         if not broadcaster_id:
             return "Error: Could not find broadcaster ID"
 
-        api_url = f'https://api.twitch.tv/helix/clips?broadcaster_id={broadcaster_id}&first=10'
+        api_url = f'https://api.twitch.tv/helix/clips?broadcaster_id={broadcaster_id}&first=50'
 
         access_token = session['access_token'][0]
 
@@ -107,6 +107,19 @@ def fetch_clips():
 
         if response.status_code == 200:
             clips_data = response.json().get('data', [])
+
+            # Iterate through the clips_data and fetch creation date and views for each clip
+            for clip in clips_data:
+                clip_id = clip.get('id')
+                clip_info_url = f'https://api.twitch.tv/helix/clips?id={clip_id}'
+                clip_info_response = requests.get(clip_info_url, headers=headers)
+                if clip_info_response.status_code == 200:
+                    clip_info = clip_info_response.json().get('data', [])
+                    if clip_info:
+                        # Update the clip dictionary with creation date and views
+                        clip['creation_date'] = clip_info[0].get('created_at')
+                        clip['views'] = clip_info[0].get('view_count')
+
             return render_template('index.html', clips=clips_data)
         else:
             error_message = response.json().get('message')
@@ -114,6 +127,7 @@ def fetch_clips():
 
     except Exception as e:
         return f"Error: {e}"
+
 
 if __name__ == "__main__":
     app.run(debug=True)
