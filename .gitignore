@@ -6,3 +6,4 @@ flask_session
 flask-app/.env
 flask-app/env/*
 flask-app/__pycache__
+flask-app/.DS_Store
