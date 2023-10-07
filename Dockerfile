@@ -7,7 +7,7 @@ WORKDIR /app
 # Copy the Flask application files into the container
 COPY flask-app/ /app
 
-# Expose the port on which your Flask application will run (e.g., 5000)
+# Expose the port on which Flask app will run 
 EXPOSE 8080
 
 # update pip
