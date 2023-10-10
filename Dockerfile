@@ -17,4 +17,4 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 # start flask app
-CMD ["flask" ,"run" ,"--host=0.0.0.0" ,"--port=8080"] 
+CMD ["flask" ,"run" ,"--host=0.0.0.0" ,"--port=8001"] 
