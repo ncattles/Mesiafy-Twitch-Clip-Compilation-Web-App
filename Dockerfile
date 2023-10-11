@@ -8,7 +8,7 @@ WORKDIR /app
 COPY flask-app/ /app
 
 # Expose the port on which Flask app will run 
-EXPOSE 8080
+EXPOSE 8001
 
 # update pip
 RUN pip install --upgrade pip
