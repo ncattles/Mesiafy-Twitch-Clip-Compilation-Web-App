@@ -7,3 +7,6 @@ flask-app/.env
 flask-app/env/*
 flask-app/__pycache__
 flask-app/.DS_Store
+.terraform.lock.hcl
+.terraform/
+terraform.*
