@@ -10,3 +10,5 @@ flask-app/.DS_Store
 .terraform.lock.hcl
 .terraform/
 terraform.*
+*.crt
+*.key
