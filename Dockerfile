@@ -7,14 +7,27 @@ WORKDIR /app
 # Copy the Flask application files into the container
 COPY flask-app/ /app
 
-# Expose the port on which Flask app will run 
-EXPOSE 8001
-
 # update pip
 RUN pip install --upgrade pip
 
 # Install the dependencies
 RUN pip install -r requirements.txt
 
+# Install Nginx 
+RUN apt-get update && apt-get install -y nginx
+
+# Copy over Nginx configuration file and SSL certificate files
+COPY nginx.conf /etc/nginx/sites-available/default
+COPY server.crt /etc/nginx/ssl/server.crt
+COPY server.key /etc/nginx/ssl/server.key
+
+# Expose the ports on which Flask app will run 
+EXPOSE 80
+EXPOSE 443
+
+# Use a shell script to start Nginx and Gunicorn
+COPY start_services.sh /start_services.sh
+RUN chmod +x /start_services.sh
+
 # start flask app
-CMD ["flask" ,"run" ,"--host=0.0.0.0" ,"--port=8001"] 
+CMD ["/start_services.sh"] 
