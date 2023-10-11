@@ -81,7 +81,7 @@ resource "aws_instance" "flask_app_instance" {
   subnet_id              = "subnet-0beff5d225fe14143"
   vpc_security_group_ids = [aws_security_group.flask_app_sg.id, aws_security_group.jenkins_instance_sg.id]
   key_name               = "my-key-pair"
-  iam_instance_profile   = "instance_get_params" # allows the instance to access the SSM Parameter Store
+
 
   user_data = <<-EOF
     #!/bin/bash
@@ -109,6 +109,9 @@ resource "aws_instance" "flask_app_instance" {
 
     # run docker image
     sudo docker run -d -p 8001:8001 ncattles/twitch_flask_app:latest
+
+    # logout of docker (this will get rid of the credentials in the instance)
+    sudo docker logout 
 
     EOF
 
