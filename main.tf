@@ -12,15 +12,28 @@ provider "aws" {
   region = "us-east-1"
 }
 
+# home ip address
+data "aws_ssm_parameter" "ip-address"{
+  name = "/info/home-ip"
+}
+
 # Security Group for Flask App
 resource "aws_security_group" "flask_app_sg" {
   name        = "flask_app_sg"
-  description = "Allow inbound traffic on port 8001 for flask app and SSH from anywhere (normally would be restricted to a specific IP range/address)"
+  description = "Allow inbound traffic on port 80 and 443 for flask app and SSH from home IP address"
 
   ingress {
-    description = "Allow inbound traffic on port 8001 for flask app"
-    from_port   = 8001
-    to_port     = 8001
+    description = "Allow inbound traffic on port 80 for flask app"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Allow inbound traffic on port 443 for flask app"
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -30,7 +43,7 @@ resource "aws_security_group" "flask_app_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["${data.aws_ssm_parameter.ip-address.value}/32"]
   }
 
   egress {
@@ -59,18 +72,44 @@ data "aws_ssm_parameter" "password" {
 # Security Group for Jenkins
 resource "aws_security_group" "jenkins_instance_sg" {
   name        = "jenkins_instance"
-  description = "Allow inbound traffic on port 8080 for Jenkins from anywhere (normally would be restricted to a specific IP range/address)"
+  description = "Allow inbound traffic on port 8080 for Jenkins from home IP address"
 
   ingress {
     description = "Allow inbound traffic on port 8080 for Jenkins"
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["${data.aws_ssm_parameter.ip-address.value}/32"]
   }
 
   tags = {
     flask_app = "jenkins_instance_sg"
+  }
+}
+
+# Route53 Record for Flask App
+resource "aws_route53_record" "flask_app" {
+  zone_id = "Z02316063FX4EYNPYXNY4"
+  name    = "mesiafy.com"
+  type    = "A"
+
+  alias {
+    name                   = aws_instance.flask_app_instance.public_ip
+    zone_id                = "Z02316063FX4EYNPYXNY4"
+    evaluate_target_health = false
+  }
+}
+
+# Additional Route53 Record for Flask App
+resource "aws_route53_record" "flask_app_alias" {
+  zone_id = "Z02316063FX4EYNPYXNY4"
+  name    = "www.mesiafy.com"
+  type    = "A"
+
+  alias {
+    name                   = aws_instance.flask_app_instance.public_ip
+    zone_id                = "Z02316063FX4EYNPYXNY4"
+    evaluate_target_health = false
   }
 }
 
@@ -101,6 +140,10 @@ resource "aws_instance" "flask_app_instance" {
     sudo systemctl enable jenkins
     sudo systemctl start jenkins 
 
+    # install certbot for certificate management
+    sudo yum install epel-release -y
+    sudo yum install certbot python3-certbot-nginx -y
+
     # login to docker
     sudo docker login -u ${data.aws_ssm_parameter.username.value} -p ${data.aws_ssm_parameter.password.value}
 
@@ -108,7 +151,7 @@ resource "aws_instance" "flask_app_instance" {
     sudo docker pull ncattles/twitch_flask_app:latest
 
     # run docker image
-    sudo docker run -d -p 8001:8001 ncattles/twitch_flask_app:latest
+    sudo docker run -d -p 80:80 -p 443:443 ncattles/twitch_flask_app:latest
 
     # logout of docker (this will get rid of the credentials in the instance)
     sudo docker logout 
