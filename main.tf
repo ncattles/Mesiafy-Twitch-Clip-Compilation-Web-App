@@ -13,7 +13,7 @@ provider "aws" {
 }
 
 # home ip address
-data "aws_ssm_parameter" "ip-address"{
+data "aws_ssm_parameter" "ip-address" {
   name = "/info/home-ip"
 }
 
@@ -91,26 +91,18 @@ resource "aws_security_group" "jenkins_instance_sg" {
 resource "aws_route53_record" "flask_app" {
   zone_id = "Z02316063FX4EYNPYXNY4"
   name    = "mesiafy.com"
+  ttl     = 300
   type    = "A"
-
-  alias {
-    name                   = aws_instance.flask_app_instance.public_ip
-    zone_id                = "Z02316063FX4EYNPYXNY4"
-    evaluate_target_health = false
-  }
+  records = [aws_instance.flask_app_instance.public_ip]
 }
 
 # Additional Route53 Record for Flask App
-resource "aws_route53_record" "flask_app_alias" {
+resource "aws_route53_record" "www" {
   zone_id = "Z02316063FX4EYNPYXNY4"
   name    = "www.mesiafy.com"
+  ttl     = 300
   type    = "A"
-
-  alias {
-    name                   = aws_instance.flask_app_instance.public_ip
-    zone_id                = "Z02316063FX4EYNPYXNY4"
-    evaluate_target_health = false
-  }
+  records = [aws_instance.flask_app_instance.public_ip]
 }
 
 # EC2 Instance for Flask App
@@ -141,8 +133,11 @@ resource "aws_instance" "flask_app_instance" {
     sudo systemctl start jenkins 
 
     # install certbot for certificate management
-    sudo yum install epel-release -y
-    sudo yum install certbot python3-certbot-nginx -y
+    sudo dnf install -y augeas-libs
+    sudo python3 -m venv /opt/certbot/
+    sudo /opt/certbot/bin/pip install --upgrade pip
+    sudo /opt/certbot/bin/pip install certbot
+    sudo /opt/certbot/bin/pip install certbot-nginx
 
     # login to docker
     sudo docker login -u ${data.aws_ssm_parameter.username.value} -p ${data.aws_ssm_parameter.password.value}
@@ -169,4 +164,3 @@ resource "aws_instance" "flask_app_instance" {
 output "flask_app_public_ip" {
   value = aws_instance.flask_app_instance.public_ip
 }
-

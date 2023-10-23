@@ -24,7 +24,6 @@ COPY server.key /etc/nginx/ssl/server.key
 # Expose the ports on which Flask app will run 
 EXPOSE 80
 EXPOSE 443
-EXPOSE 8001
 
 # Use a shell script to start Nginx and Gunicorn
 COPY start_services.sh /start_services.sh
