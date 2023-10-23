@@ -28,7 +28,8 @@ twitch = oauth.remote_app('twitch',
 # Route to initiate the Twitch OAuth flow using Flask-OAuthlib
 @app.route('/login')
 def login():
-    return twitch.authorize(callback=url_for('twitch_authorized', _external=True))
+    session.clear()  # Clear existing session data
+    return twitch.authorize(callback='https://mesiafy.com/twitch_authorized')  # Update with your correct URL
 
 # Route to handle the Twitch OAuth callback using Flask-OAuthlib
 @app.route('/twitch_authorized')
