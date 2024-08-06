@@ -4,7 +4,7 @@
 
 ![Mesiafy Screenshot](./images/Enter%20Twitch%20Channel.png)
 
-Mesiafy is a web application that allows users to search for Twitch streamer usernames and retrieve information about their clips. It is hosted as a Docker container on an AWS EC2 instance with the URL [mesiafy.com](http://mesiafy.com).
+Mesiafy is a web application that allows users to search for Twitch streamer usernames and retrieve information about their clips. It was hosted as a Docker container on an AWS EC2 instance with the URL [mesiafy.com](http://mesiafy.com).
 
 ## Features
 
