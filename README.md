@@ -20,6 +20,8 @@ Mesiafy is a web application that allows users to search for Twitch streamer use
 
 ## Usage
 
+NOTE: This site was recently taken down due to the growing expenses to keep it hosted.
+
 1. Open your web browser and navigate to [http://mesiafy.com](http://mesiafy.com).
 
 2. Enter the Twitch streamer's username in the search bar and click "Submit."
